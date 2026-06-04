@@ -1,0 +1,20 @@
+CREATE TABLE items (
+    id                   BIGSERIAL    PRIMARY KEY,
+    name                 VARCHAR(100) NOT NULL,
+    description          TEXT,
+    item_type_id         BIGINT       REFERENCES item_types(id),
+    damage_rating        INT,
+    armor_rating         INT,
+    value                INT          NOT NULL DEFAULT 0,
+    strength_modifier    INT          NOT NULL DEFAULT 0,
+    sense_modifier       INT          NOT NULL DEFAULT 0,
+    speed_modifier       INT          NOT NULL DEFAULT 0,
+    health_modifier      INT          NOT NULL DEFAULT 0,
+    crit_chance_modifier INT          NOT NULL DEFAULT 0,
+    damage_type_id       BIGINT       REFERENCES damage_types(id),
+    requires_strength    INT,
+    requires_sense       INT,
+    requires_speed       INT,
+    grants_ability_id    BIGINT       REFERENCES abilities(id),
+    max_durability       INT
+);
