@@ -4,7 +4,7 @@ CREATE TABLE player_moves (
     description    TEXT,
     move_type      VARCHAR(20)  NOT NULL,
     damage_modifier INT         NOT NULL DEFAULT 0,
-    armor_penetration DECIMAL(3,2) NOT NULL DEFAULT 0.00,
+    armor_penetration DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     stamina_cost   INT          NOT NULL,
     is_base_move   BOOLEAN      NOT NULL DEFAULT FALSE
 );
