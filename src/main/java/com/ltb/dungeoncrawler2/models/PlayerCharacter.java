@@ -75,6 +75,16 @@ public class PlayerCharacter {
     @Column(name = "playthrough_seed")
     private Long playthroughSeed;
 
+    @Column(name = "mode")
+    private String mode;
+
+    @Column(name = "vocation_skill")
+    private String vocationSkill;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subspecies_id")
+    private Subspecies subspecies;
+
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private OffsetDateTime createdAt;
 }

@@ -1,8 +1,15 @@
+CREATE TABLE subspecies (
+    id          BIGSERIAL    PRIMARY KEY,
+    name        VARCHAR(100),
+    description TEXT
+);
+
 CREATE TABLE player_characters (
     id                BIGSERIAL    PRIMARY KEY,
     user_id           BIGINT       NOT NULL REFERENCES users(id),
     name              VARCHAR(100) NOT NULL,
     species_id        BIGINT       NOT NULL REFERENCES species(id),
+    subspecies_id     BIGINT       REFERENCES subspecies(id),
     class_type        VARCHAR(20)  NOT NULL,
     level             INT          NOT NULL DEFAULT 1,
     xp_banked         INT          NOT NULL DEFAULT 0,
@@ -15,6 +22,8 @@ CREATE TABLE player_characters (
     beg_attempts      INT          NOT NULL DEFAULT 0,
     beg_window_start  INT,
     status            VARCHAR(20)  NOT NULL DEFAULT 'ALIVE',
+    mode              VARCHAR(20),
+    vocation_skill    VARCHAR(20),
     playthrough_seed  BIGINT,
     created_at        TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
@@ -25,7 +34,7 @@ CREATE TABLE species_abilities (
     PRIMARY KEY (species_id, ability_id)
 );
 
--- Shamble start with a Death Token; other species abilities seeded when designed
+-- Shamble start with Soul Tether; other species abilities seeded when designed
 INSERT INTO species_abilities (species_id, ability_id)
 SELECT s.id, a.id FROM species s, abilities a
 WHERE s.name = 'Shamble' AND a.name = 'Soul Tether';
