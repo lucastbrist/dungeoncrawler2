@@ -1,6 +1,6 @@
 package com.ltb.dungeoncrawler2.models;
 
-import com.ltb.dungeoncrawler2.enums.MoveType;
+import com.ltb.dungeoncrawler2.enums.AttackType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,8 +21,8 @@ public class PlayerMove {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "move_type", nullable = false)
-    private MoveType moveType;
+    @Column(name = "attack_type", nullable = false)
+    private AttackType attackType;
 
     @Column(name = "damage_modifier", nullable = false)
     private int damageModifier;
