@@ -1,6 +1,6 @@
 package com.ltb.dungeoncrawler2.models;
 
-public record CharacterAttributes(
+public record CharacterStats(
         int totalStrength,
         int totalSense,
         int totalSpeed,

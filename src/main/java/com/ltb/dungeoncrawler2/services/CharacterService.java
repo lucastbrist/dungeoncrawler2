@@ -3,7 +3,7 @@ package com.ltb.dungeoncrawler2.services;
 import com.ltb.dungeoncrawler2.enums.ClassType;
 import com.ltb.dungeoncrawler2.exceptions.NotFoundException;
 import com.ltb.dungeoncrawler2.models.CharacterAbility;
-import com.ltb.dungeoncrawler2.models.CharacterAttributes;
+import com.ltb.dungeoncrawler2.models.CharacterStats;
 import com.ltb.dungeoncrawler2.models.PlayerCharacter;
 import com.ltb.dungeoncrawler2.models.Species;
 import com.ltb.dungeoncrawler2.models.dto.AbilityInfo;
@@ -91,7 +91,7 @@ public class CharacterService {
     }
 
     private CharacterResponse toResponse(PlayerCharacter pc) {
-        CharacterAttributes attributes = recalculateAttributes(pc);
+        CharacterStats attributes = recalculateStats(pc);
         List<AbilityInfo> abilityList = pc.getAbilities().stream()
                 .map(ca -> new AbilityInfo(
                         ca.getAbility().getId(),
@@ -128,7 +128,7 @@ public class CharacterService {
         );
     }
 
-    public CharacterAttributes recalculateAttributes(PlayerCharacter pc) {
+    public CharacterStats recalculateStats(PlayerCharacter pc) {
         Species species = pc.getSpecies();
 
         int totalStrength = BASE_STRENGTH + species.getStrengthMod() + pc.getLeveledStrength();
@@ -146,11 +146,11 @@ public class CharacterService {
             spellDamage += SORCERER_SPELL_DAMAGE_BONUS;
         }
 
-        int critChance = recalculateCritChance(totalStrength, totalSense, totalSpeed, pc.getClassType());
+        int critChance = recalculateCritChance(totalSense);
         int stamina    = BASE_STAMINA + (totalSpeed / SPEED_STAMINA_DIVISOR);
         int stealth    = totalSpeed + (totalSense / STEALTH_SENSE_DIVISOR);
 
-        return new CharacterAttributes(
+        return new CharacterStats(
                 totalStrength, totalSense, totalSpeed,
                 health, damage, spellDamage,
                 0, // armorRating — Phase 4
@@ -162,11 +162,7 @@ public class CharacterService {
         return pc.getLevel() * LEVEL_UP_POINTS_MULTIPLIER;
     }
 
-    private int recalculateCritChance(int strength, int sense, int speed, ClassType classType) {
-        return switch (classType) {
-            case WARRIOR  -> BASE_CRIT_CHANCE + (strength / CRIT_STAT_DIVISOR);
-            case SORCERER -> BASE_CRIT_CHANCE + (sense    / CRIT_STAT_DIVISOR);
-            case THIEF    -> BASE_CRIT_CHANCE + (speed    / CRIT_STAT_DIVISOR);
-        };
+    private int recalculateCritChance(int sense) {
+        return BASE_CRIT_CHANCE + (sense / CRIT_STAT_DIVISOR);
     }
 }

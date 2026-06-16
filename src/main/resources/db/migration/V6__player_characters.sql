@@ -28,7 +28,7 @@ CREATE TABLE species_abilities (
 -- Shamble start with a Death Token; other species abilities seeded when designed
 INSERT INTO species_abilities (species_id, ability_id)
 SELECT s.id, a.id FROM species s, abilities a
-WHERE s.name = 'Shamble' AND a.name = 'Death Token';
+WHERE s.name = 'Shamble' AND a.name = 'Soul Tether';
 
 CREATE TABLE character_abilities (
     id                  BIGSERIAL PRIMARY KEY,

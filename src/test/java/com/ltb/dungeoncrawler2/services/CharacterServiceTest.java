@@ -1,7 +1,7 @@
 package com.ltb.dungeoncrawler2.services;
 
 import com.ltb.dungeoncrawler2.enums.ClassType;
-import com.ltb.dungeoncrawler2.models.CharacterAttributes;
+import com.ltb.dungeoncrawler2.models.CharacterStats;
 import com.ltb.dungeoncrawler2.models.PlayerCharacter;
 import com.ltb.dungeoncrawler2.models.Species;
 import com.ltb.dungeoncrawler2.repositories.PlayerCharacterRepository;
@@ -34,16 +34,17 @@ class CharacterServiceTest {
     @InjectMocks CharacterService service;
 
     static Stream<Arguments> speciesAndClassCombinations() {
-        // strMod, senseMod, spdMod (from V2 seed data), classType
+        // strMod, senseMod, spdMod (addendum-canonical V2 seed values)
         int[][] speciesMods = {
             { 1,  1,  1},  // Human
-            {-1,  2,  2},  // Elf
-            { 3, -2,  0},  // Dwarf
-            {-2,  0,  3},  // Halfling
-            {-3,  3,  1},  // Gnome
-            {-1, -1, -1},  // Shamble
+            { 0,  2,  1},  // Elf
+            { 3,  0,  0},  // Dwarf
+            {-3,  0,  3},  // Halfling
+            {-3,  3,  0},  // Gnome
+            {-3, -3, -3},  // Shamble
+            { 2, -1,  2},  // Beastfolk
         };
-        ClassType[] classes = {WARRIOR, SORCERER, THIEF};
+        ClassType[] classes = {WARRIOR, SORCERER, BURGLAR};
 
         Stream.Builder<Arguments> args = Stream.builder();
         for (int[] mods : speciesMods) {
@@ -57,7 +58,7 @@ class CharacterServiceTest {
     @ParameterizedTest
     @MethodSource("speciesAndClassCombinations")
     void recalculateAttributes_formulasAreCorrect(int strMod, int senseMod, int spdMod, ClassType classType) {
-        CharacterAttributes attributes = service.recalculateAttributes(characterWith(strMod, senseMod, spdMod, classType));
+        CharacterStats stats = service.recalculateStats(characterWith(strMod, senseMod, spdMod, classType));
 
         int str   = BASE_STRENGTH + strMod;
         int sense = BASE_SENSE    + senseMod;
@@ -69,24 +70,20 @@ class CharacterServiceTest {
                                + (classType == WARRIOR ? WARRIOR_DAMAGE_BONUS : 0);
         int expectedSpellDmg = sense + BASE_SPELL_DAMAGE
                                + (classType == SORCERER ? SORCERER_SPELL_DAMAGE_BONUS : 0);
-        int expectedCrit = switch (classType) {
-            case WARRIOR  -> BASE_CRIT_CHANCE + (str / CRIT_STAT_DIVISOR);
-            case SORCERER -> BASE_CRIT_CHANCE + (sense / CRIT_STAT_DIVISOR);
-            case THIEF    -> BASE_CRIT_CHANCE + (spd / CRIT_STAT_DIVISOR);
-        };
-        int expectedStamina = BASE_STAMINA + (spd / SPEED_STAMINA_DIVISOR);
-        int expectedStealth = spd + (sense / STEALTH_SENSE_DIVISOR);
+        int expectedCrit     = BASE_CRIT_CHANCE + (sense / CRIT_STAT_DIVISOR);
+        int expectedStamina  = BASE_STAMINA + (spd / SPEED_STAMINA_DIVISOR);
+        int expectedStealth  = spd + (sense / STEALTH_SENSE_DIVISOR);
 
-        assertEquals(str,              attributes.totalStrength(), "totalStrength");
-        assertEquals(sense,            attributes.totalSense(),    "totalSense");
-        assertEquals(spd,              attributes.totalSpeed(),    "totalSpeed");
-        assertEquals(expectedHealth,   attributes.health(),        "health");
-        assertEquals(expectedDamage,   attributes.damage(),        "damage");
-        assertEquals(expectedSpellDmg, attributes.spellDamage(),   "spellDamage");
-        assertEquals(0,                attributes.armorRating(),   "armorRating");
-        assertEquals(expectedCrit,     attributes.critChance(),    "critChance");
-        assertEquals(expectedStamina,  attributes.stamina(),       "stamina");
-        assertEquals(expectedStealth,  attributes.stealth(),       "stealth");
+        assertEquals(str,              stats.totalStrength(), "totalStrength");
+        assertEquals(sense,            stats.totalSense(),    "totalSense");
+        assertEquals(spd,              stats.totalSpeed(),    "totalSpeed");
+        assertEquals(expectedHealth,   stats.health(),        "health");
+        assertEquals(expectedDamage,   stats.damage(),        "damage");
+        assertEquals(expectedSpellDmg, stats.spellDamage(),   "spellDamage");
+        assertEquals(0,                stats.armorRating(),   "armorRating");
+        assertEquals(expectedCrit,     stats.critChance(),    "critChance");
+        assertEquals(expectedStamina,  stats.stamina(),       "stamina");
+        assertEquals(expectedStealth,  stats.stealth(),       "stealth");
     }
 
     private static PlayerCharacter characterWith(int strMod, int senseMod, int spdMod, ClassType classType) {

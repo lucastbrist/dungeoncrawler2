@@ -6,4 +6,5 @@ CREATE TABLE abilities (
 );
 
 INSERT INTO abilities (name, description, initial_uses) VALUES
-    ('Death Token', 'When you would die, choose to survive with 1 HP instead. Consumed on use.', 1);
+    ('Death Token', 'When you would die, choose to survive with 1 HP instead. Consumed on use.', 1),
+    ('Soul Tether', 'PLACEHOLDER_SOUL_TETHER_DESCRIPTION', -1);

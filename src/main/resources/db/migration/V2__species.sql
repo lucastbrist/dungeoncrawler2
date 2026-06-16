@@ -8,9 +8,10 @@ CREATE TABLE species (
 );
 
 INSERT INTO species (name, strength_mod, sense_mod, speed_mod) VALUES
-    ('Human',    1,  1,  1),
-    ('Elf',     -1,  2,  2),
-    ('Dwarf',    3, -2,  0),
-    ('Halfling', -2,  0,  3),
-    ('Gnome',   -3,  3,  1),
-    ('Shamble', -1, -1, -1);
+    ('Human',     1,  1,  1),
+    ('Elf',       0,  2,  1),
+    ('Dwarf',     3,  0,  0),
+    ('Halfling', -3,  0,  3),
+    ('Gnome',    -3,  3,  0),
+    ('Shamble',  -3, -3, -3),
+    ('Beastfolk', 2, -1,  2);
