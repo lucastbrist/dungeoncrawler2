@@ -22,10 +22,9 @@ CREATE TABLE player_characters (
     beg_attempts      INT          NOT NULL DEFAULT 0,
     beg_window_start  INT,
     status            VARCHAR(20)  NOT NULL DEFAULT 'ALIVE',
-    mode              VARCHAR(20),
-    vocation_skill    VARCHAR(20),
-    playthrough_seed  BIGINT,
-    created_at        TIMESTAMPTZ  NOT NULL DEFAULT now()
+    mode              VARCHAR(20)  NOT NULL,
+    discounted_skill  VARCHAR(20)  NOT NULL,
+    playthrough_seed  BIGINT
 );
 
 CREATE TABLE species_abilities (
@@ -34,10 +33,52 @@ CREATE TABLE species_abilities (
     PRIMARY KEY (species_id, ability_id)
 );
 
--- Shamble start with Soul Tether; other species abilities seeded when designed
+-- Shamble: Soul Tether passive
 INSERT INTO species_abilities (species_id, ability_id)
 SELECT s.id, a.id FROM species s, abilities a
-WHERE s.name = 'Shamble' AND a.name = 'Soul Tether';
+WHERE s.name = 'SHAMBLE' AND a.name = 'Soul Tether';
+
+-- Attribute learning rate discounts by species
+-- Human is excluded here: player chooses 2 from candidates seeded below
+INSERT INTO species_abilities (species_id, ability_id)
+SELECT s.id, a.id FROM species s, abilities a
+WHERE s.name = 'DWARF'
+  AND a.category = 'LEARNING_RATE'
+  AND a.effect_config->>'targetType' = 'ATTRIBUTE'
+  AND a.effect_config->>'target'     = 'STRENGTH'
+  AND (a.effect_config->>'multiplier')::numeric = 2.0;
+
+INSERT INTO species_abilities (species_id, ability_id)
+SELECT s.id, a.id FROM species s, abilities a
+WHERE s.name = 'ELF'
+  AND a.category = 'LEARNING_RATE'
+  AND a.effect_config->>'targetType' = 'ATTRIBUTE'
+  AND a.effect_config->>'target'     = 'SENSE'
+  AND (a.effect_config->>'multiplier')::numeric = 2.0;
+
+INSERT INTO species_abilities (species_id, ability_id)
+SELECT s.id, a.id FROM species s, abilities a
+WHERE s.name = 'HALFLING'
+  AND a.category = 'LEARNING_RATE'
+  AND a.effect_config->>'targetType' = 'ATTRIBUTE'
+  AND a.effect_config->>'target'     = 'SPEED'
+  AND (a.effect_config->>'multiplier')::numeric = 2.0;
+
+INSERT INTO species_abilities (species_id, ability_id)
+SELECT s.id, a.id FROM species s, abilities a
+WHERE s.name = 'SHAMBLE'
+  AND a.category = 'LEARNING_RATE'
+  AND a.effect_config->>'targetType' = 'ATTRIBUTE'
+  AND (a.effect_config->>'multiplier')::numeric = 0.5;
+
+-- Human: all three 2x attribute abilities are candidates; player chooses two at creation
+INSERT INTO species_abilities (species_id, ability_id)
+SELECT s.id, a.id FROM species s, abilities a
+WHERE s.name = 'HUMAN'
+  AND a.category = 'LEARNING_RATE'
+  AND a.effect_config->>'targetType' = 'ATTRIBUTE'
+  AND a.effect_config->>'target'     IN ('STRENGTH', 'SENSE', 'SPEED')
+  AND (a.effect_config->>'multiplier')::numeric = 2.0;
 
 CREATE TABLE character_abilities (
     id                  BIGSERIAL PRIMARY KEY,

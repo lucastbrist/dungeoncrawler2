@@ -1,16 +1,15 @@
 package com.ltb.dungeoncrawler2.services;
 
-import com.ltb.dungeoncrawler2.enums.ClassType;
 import com.ltb.dungeoncrawler2.models.CharacterStats;
 import com.ltb.dungeoncrawler2.models.PlayerCharacter;
 import com.ltb.dungeoncrawler2.models.Species;
 import com.ltb.dungeoncrawler2.repositories.PlayerCharacterRepository;
 import com.ltb.dungeoncrawler2.repositories.SpeciesRepository;
 import com.ltb.dungeoncrawler2.repositories.UserRepository;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -20,7 +19,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.stream.Stream;
 
-import static com.ltb.dungeoncrawler2.enums.ClassType.*;
 import static com.ltb.dungeoncrawler2.services.CharacterService.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -33,60 +31,56 @@ class CharacterServiceTest {
 
     @InjectMocks CharacterService service;
 
-    static Stream<Arguments> speciesAndClassCombinations() {
+    static Stream<Arguments> speciesMods() {
         // strMod, senseMod, spdMod (addendum-canonical V2 seed values)
-        int[][] speciesMods = {
-            { 1,  1,  1},  // Human
-            { 0,  2,  1},  // Elf
-            { 3,  0,  0},  // Dwarf
-            {-3,  0,  3},  // Halfling
-            {-3,  3,  0},  // Gnome
-            {-3, -3, -3},  // Shamble
-            { 2, -1,  2},  // Beastfolk
-        };
-        ClassType[] classes = {WARRIOR, SORCERER, BURGLAR};
-
-        Stream.Builder<Arguments> args = Stream.builder();
-        for (int[] mods : speciesMods) {
-            for (ClassType classType : classes) {
-                args.add(Arguments.of(mods[0], mods[1], mods[2], classType));
-            }
-        }
-        return args.build();
+        return Stream.of(
+            Arguments.of( 1,  1,  1),  // Human
+            Arguments.of( 0,  2,  1),  // Elf
+            Arguments.of( 3,  0,  0),  // Dwarf
+            Arguments.of(-3,  0,  3),  // Halfling
+            Arguments.of(-3,  3,  0),  // Gnome
+            Arguments.of( 2, -1,  2),  // Beastfolk
+            Arguments.of(-3, -3, -3)   // Shamble
+        );
     }
 
     @ParameterizedTest
-    @MethodSource("speciesAndClassCombinations")
-    void recalculateAttributes_formulasAreCorrect(int strMod, int senseMod, int spdMod, ClassType classType) {
-        CharacterStats stats = service.recalculateStats(characterWith(strMod, senseMod, spdMod, classType));
+    @MethodSource("speciesMods")
+    void recalculateStats_formulasAreCorrect(int strMod, int senseMod, int spdMod) {
+        CharacterStats stats = service.recalculateStats(characterWith(strMod, senseMod, spdMod));
 
-        int str   = BASE_STRENGTH + strMod;
-        int sense = BASE_SENSE    + senseMod;
-        int spd   = BASE_SPEED    + spdMod;
+        int str   = BASE_ATTRIBUTE_VALUE + strMod;
+        int sense = BASE_ATTRIBUTE_VALUE + senseMod;
+        int spd   = BASE_ATTRIBUTE_VALUE + spdMod;
 
-        int expectedHealth   = (str / HEALTH_STRENGTH_DIVISOR) + BASE_HEALTH
-                               + (classType == WARRIOR ? WARRIOR_HEALTH_BONUS : 0);
-        int expectedDamage   = str + BASE_DAMAGE
-                               + (classType == WARRIOR ? WARRIOR_DAMAGE_BONUS : 0);
-        int expectedSpellDmg = sense + BASE_SPELL_DAMAGE
-                               + (classType == SORCERER ? SORCERER_SPELL_DAMAGE_BONUS : 0);
-        int expectedCrit     = BASE_CRIT_CHANCE + (sense / CRIT_STAT_DIVISOR);
-        int expectedStamina  = BASE_STAMINA + (spd / SPEED_STAMINA_DIVISOR);
-        int expectedStealth  = spd + (sense / STEALTH_SENSE_DIVISOR);
+        int   expectedHealth          = BASE_POOL + str   * ATTRIBUTE_MAIN_SCALAR_MULT;
+        int   expectedArcana          = BASE_POOL + sense * ATTRIBUTE_MAIN_SCALAR_MULT;
+        int   expectedStamina         = BASE_POOL + spd   * ATTRIBUTE_MAIN_SCALAR_MULT;
+        int   expectedMagicDamage     = sense * ATTRIBUTE_SECOND_SCALAR_MULT;
+        int   expectedCarryWeight     = BASE_CARRY_WEIGHT + str * ATTRIBUTE_SECOND_SCALAR_MULT;
+        int   expectedInitiative      = spd * ATTRIBUTE_SECOND_SCALAR_MULT;
+        int   expectedPhysicalDamage  = (int)(str * SHARED_SCALAR + spd * SHARED_SCALAR);
+        int   expectedCritThreshold   = D100 - (int)(sense * SHARED_SCALAR + spd * SHARED_SCALAR);
+        float expectedCritDamageMult  = CRIT_BASE_MULTIPLIER
+                + (str * SHARED_SCALAR + sense * SHARED_SCALAR) * CRIT_DAMAGE_COEFFICIENT;
 
-        assertEquals(str,              stats.totalStrength(), "totalStrength");
-        assertEquals(sense,            stats.totalSense(),    "totalSense");
-        assertEquals(spd,              stats.totalSpeed(),    "totalSpeed");
-        assertEquals(expectedHealth,   stats.health(),        "health");
-        assertEquals(expectedDamage,   stats.damage(),        "damage");
-        assertEquals(expectedSpellDmg, stats.spellDamage(),   "spellDamage");
-        assertEquals(0,                stats.armorRating(),   "armorRating");
-        assertEquals(expectedCrit,     stats.critChance(),    "critChance");
-        assertEquals(expectedStamina,  stats.stamina(),       "stamina");
-        assertEquals(expectedStealth,  stats.stealth(),       "stealth");
+        assertEquals(str,                  stats.totalStrength(),       "totalStrength");
+        assertEquals(sense,                stats.totalSense(),           "totalSense");
+        assertEquals(spd,                  stats.totalSpeed(),           "totalSpeed");
+        assertEquals(expectedHealth,       stats.health(),               "health");
+        assertEquals(expectedArcana,       stats.arcana(),               "arcana");
+        assertEquals(expectedStamina,      stats.stamina(),              "stamina");
+        assertEquals(expectedMagicDamage,  stats.magicDamage(),          "magicDamage");
+        assertEquals(expectedCarryWeight,  stats.carryWeight(),          "carryWeight");
+        assertEquals(expectedInitiative,   stats.initiative(),           "initiative");
+        assertEquals(expectedPhysicalDamage, stats.physicalDamage(),     "physicalDamage");
+        assertEquals(expectedCritThreshold,  stats.critThreshold(),      "critThreshold");
+        assertEquals(0,                    stats.armorDR(),          "armorDR");
+        assertEquals(0,                    stats.armorDT(),          "armorDT");
+        assertEquals(expectedCritDamageMult, stats.critDamageMultiplier(), 0.0001f, "critDamageMultiplier");
     }
 
-    private static PlayerCharacter characterWith(int strMod, int senseMod, int spdMod, ClassType classType) {
+    private static PlayerCharacter characterWith(int strMod, int senseMod, int spdMod) {
         Species species = mock(Species.class);
         when(species.getStrengthMod()).thenReturn(strMod);
         when(species.getSenseMod()).thenReturn(senseMod);
@@ -94,7 +88,6 @@ class CharacterServiceTest {
 
         PlayerCharacter pc = new PlayerCharacter();
         pc.setSpecies(species);
-        pc.setClassType(classType);
         return pc;
     }
 }

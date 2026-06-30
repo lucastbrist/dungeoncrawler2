@@ -1,5 +1,6 @@
 package com.ltb.dungeoncrawler2.models;
 
+import com.ltb.dungeoncrawler2.enums.SpeciesName;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,8 +17,9 @@ public class Species {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String name;
+    private SpeciesName name;
 
     @Column
     private String description;

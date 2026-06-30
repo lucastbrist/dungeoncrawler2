@@ -1,6 +1,5 @@
 package com.ltb.dungeoncrawler2.controllers;
 
-import com.ltb.dungeoncrawler2.exceptions.NotFoundException;
 import com.ltb.dungeoncrawler2.models.dto.CharacterResponse;
 import com.ltb.dungeoncrawler2.models.dto.CreateCharacterRequest;
 import com.ltb.dungeoncrawler2.services.CharacterService;
@@ -18,14 +17,12 @@ public class CharacterController {
 
     @PostMapping
     public ResponseEntity<CharacterResponse> createCharacter(@Valid @RequestBody CreateCharacterRequest request) {
-        try {
-            CharacterResponse response = request.speciesId() != null
-                    ? characterService.createCharacter(request.userId(), request.name(), request.speciesId(), request.classType())
-                    : characterService.createCharacter(request.userId(), request.name(), request.speciesName(), request.classType());
-            return ResponseEntity.status(201).body(response);
-        } catch (NotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        CharacterResponse response = request.speciesId() != null
+                ? characterService.createCharacter(request.userId(), request.name(), request.speciesId(),
+                        request.classType(), request.mode(), request.discountedSkill(), request.discountedAttributes())
+                : characterService.createCharacter(request.userId(), request.name(), request.speciesName(),
+                        request.classType(), request.mode(), request.discountedSkill(), request.discountedAttributes());
+        return ResponseEntity.status(201).body(response);
     }
 
     @GetMapping("/{id}")

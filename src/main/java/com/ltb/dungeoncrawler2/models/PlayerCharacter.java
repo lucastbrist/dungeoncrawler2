@@ -2,12 +2,13 @@ package com.ltb.dungeoncrawler2.models;
 
 import com.ltb.dungeoncrawler2.enums.CharacterStatus;
 import com.ltb.dungeoncrawler2.enums.ClassType;
+import com.ltb.dungeoncrawler2.enums.GameMode;
+import com.ltb.dungeoncrawler2.enums.SkillType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class PlayerCharacter {
     @Column(nullable = false)
     private String name;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "species_id", nullable = false)
     private Species species;
 
@@ -75,16 +76,15 @@ public class PlayerCharacter {
     @Column(name = "playthrough_seed")
     private Long playthroughSeed;
 
-    @Column(name = "mode")
-    private String mode;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "mode", nullable = false)
+    private GameMode mode;
 
-    @Column(name = "vocation_skill")
-    private String vocationSkill;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "discounted_skill", nullable = false)
+    private SkillType discountedSkill;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subspecies_id")
     private Subspecies subspecies;
-
-    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
-    private OffsetDateTime createdAt;
 }

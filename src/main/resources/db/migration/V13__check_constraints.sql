@@ -12,6 +12,3 @@ ALTER TABLE dungeon_room_connections ADD CONSTRAINT chk_direction
 
 ALTER TABLE dungeon_room_connection_templates ADD CONSTRAINT chk_traversal_type
     CHECK (traversal_type IN ('BIDIRECTIONAL', 'ONE_WAY_PERMANENT', 'ONE_WAY_CONDITIONAL', 'ONE_WAY_UNLOCKABLE'));
-
-ALTER TABLE player_characters ADD CONSTRAINT chk_mode
-    CHECK (mode IN ('ENDLESS', 'LEGACY', 'CAMPAIGN', 'IRONCLAD', 'DUNGEON', 'MONSTER_MODE'));
